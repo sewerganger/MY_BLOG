@@ -13,14 +13,14 @@
   <meta name="keywords" content=http>
   
   
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.02">
+  <link rel="shortcut icon" type="image/x-icon" href="/MY_BLOG/favicon.ico?v=1.02">
   
   
-  <link rel="alternate" href="/atom.xml " title="下水道的包工头" type="application/atom+xml">
+  <link rel="alternate" href="/MY_BLOG/atom.xml " title="下水道的包工头" type="application/atom+xml">
   
 
   
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/MY_BLOG/css/style.css">
 
   <script data-ad-client="ca-pub-3792814125136208" async
     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
@@ -29,22 +29,22 @@
     <div class="container">
       <header class="header">
   <div class="blog-title">
-    <a href="/" class="logo">下水道的包工头</a>
+    <a href="/MY_BLOG/" class="logo">下水道的包工头</a>
     <div class="subtitle"></div>
   </div>
   <nav class="navbar">
     <ul class="menu">
       
         <li class="menu-item">
-          <a href="/" class="menu-item-link">Home</a>
+          <a href="/MY_BLOG/" class="menu-item-link">Home</a>
         </li>
       
         <li class="menu-item">
-          <a href="/archives" class="menu-item-link">Archives</a>
+          <a href="/MY_BLOG/archives" class="menu-item-link">Archives</a>
         </li>
       
         <li class="menu-item">
-          <a href="/about" class="menu-item-link">About</a>
+          <a href="/MY_BLOG/about" class="menu-item-link">About</a>
         </li>
       
     </ul>
@@ -58,11 +58,28 @@
     <span class="post-time">2019-12-12</span>
   </div>
   <div class="post-content">
-    
+    <h2 id="1-由来"><a href="#1-由来" class="headerlink" title="1. 由来"></a>1. 由来</h2><p>最近在开发一款看动漫的 linux 客户端(邪王真眼), 到时候再说吧，可奈何没有现成的接口，所以呢只好自己解析…..</p>
+<h2 id="2-过程"><a href="#2-过程" class="headerlink" title="2. 过程"></a>2. 过程</h2><p>这里分析的网站呢，为了不造成什么麻烦，域名就用 pronhub 代替下，还有分析这并不代表所有网站．<br>视频页: <a href="http://pronhub.com/acg/6616/9.html" target="_blank" rel="noopener">http://pronhub.com/acg/6616/9.html</a><br>首先找下 video 标签，这．．．也 tm 太 easy 了吧．．．</p>
+<p>没错，如过你使用无头浏览器这确实 easy，但是我们要的是 api, 用 request 请求的，不可能全部 down 下来，所以老老实实慢慢找．<br>首先找一般接口的基本思想<br>1.client 和 server 的交互，一般逻辑在本地是能体现的(当然没压缩过那种更容易看出来) 2.找有没有 input:hidden （这里只找到了个　貌似跟 md5 相关的 实际上没用．．．） 3.排除所有第三库(jquery.min，dplayer.min…这很容易看出来)</p>
+<p>我们继续，chrome 的 devtool 是个非常非常好用工具，所有的资源都能在 network 中看到<br>很容易就找到了视频资源</p>
+<p>but 这有什么用，额．．．先记录下几个 iframe 的 src (iframe 是 js 生成的，一开始没有)</p>
+<figure class="highlight sas"><table><tr><td class="code"><pre><code class="hljs sas">最外层: http://pornhub/f/dpcomp.php?vid=1098_2ab0e57eeed199088e19f6405653f0c5<span class="hljs-variable">&amp;m</span>=-1<span class="hljs-variable">&amp;cp</span>=1<span class="hljs-variable">&amp;dy</span>=4<span class="hljs-variable">&amp;i</span>=6616<span class="hljs-variable">&amp;pt</span>=0<span class="hljs-variable">&amp;line</span>=0<span class="hljs-variable">&amp;sl</span>=1<span class="hljs-variable">&amp;yb</span>=12<span class="hljs-variable">&amp;yb_url</span>=1006_1019a5e1ae934c63b1dc1ade5a23c757$$$https://meng.wuyou-zuida.com497/20191204/23265_0986d098/<span class="hljs-meta">index</span>.m3u8<span class="hljs-variable">&amp;i4</span>=300<span class="hljs-variable">&amp;ipad</span>=0<br>其次：http://pornhub/f/ch.php?url=1098_2ab0e57eeed199088e19f6405653f0c5<br>内层：http://pornhub/1717yun/mytest.php?url=1098_2ab0e57eeed199088e19f6405653f0c5<br>然后就是video:src http://pornhub/1098_2ab0e57eeed199088e19f6405653f0c5.f0.mp4?vkey=CA4D8C64288A3FDF30A0030D67EF5383BFD0F1F88768DCAB9A2CED41A5E7C0A574E5408E1C59BC20B4D57950191EBD680DF3C668738BD94A5F1CDB87A24FC582C486E3B56646D82BB18420F01F2794B204AEE87CBC8120DA<br></code></pre></td></tr></table></figure>
+
+<p>对最外层 iframe 分析，搜下<code>&lt;iframe id=&quot;playiframe&quot;&gt;</code>的 id , 果然这个 tt3.js．</p>
+<p>看下源码，不出所料最外层的，iframe 是拼接出来的 (看源码时, 顺着点,找出源头变量)</p>
+<p>算了我们先看下 js 文件<br>发现几个可疑的文件，这 6616 和<a href="http://pronhub.com/acg/6616/9.html．．．这三个js" target="_blank" rel="noopener">http://pronhub.com/acg/6616/9.html．．．这三个js</a> 分别来自不同的域名，是一开始就在 html 的</p>
+<p>点进去看下，这．．．这和最外层的 iframe 怎么这么像啊</p>
+<p>ok，带上一个 postman request 下　请求时一定要带上 header (可以看下 devtool network 的)，对了视频是可以换源的 这个马赛克处就是对应的源，可以用正则提取出来.</p>
+<p>接下来就容易了　发现　返回的数据里有分 iframe 额．．再请求下</p>
+<p>还来．．好吧这是最后层 iframe…, 　最后一次．</p>
+<p>发现$.get(“xxxxxx”)</p>
+<p>最最最后次请求下．．．真的</p>
+<p>好了，我要去写代码了</p>
+
   </div>
   <div class="post-footer">
     
-      <ul class="post-tag-list" itemprop="keywords"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/http/" rel="tag">http</a></li></ul>
+      <ul class="post-tag-list" itemprop="keywords"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/MY_BLOG/tags/http/" rel="tag">http</a></li></ul>
     
 
     <a href="#top" class="top">Back to Top</a>
